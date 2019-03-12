@@ -283,8 +283,8 @@ var TransformationBase = class TransformationBase {
         };
       }
       options = cloneDeep(options, function (value) {
-        if (value instanceof TransformationBase) {
-          return new value.constructor(value.toOptions());
+        if (value instanceof TransformationBase || value instanceof Layer) {
+          return value.clone();
         }
       });
       // Handling of "if" statements precedes other options as it creates a chained transformation
@@ -294,12 +294,14 @@ var TransformationBase = class TransformationBase {
       }
       for (key in options) {
         opt = options[key];
-        if (key.match(VAR_NAME_RE)) {
-          if (key !== '$attr') {
-            this.set('variable', key, opt);
+        if (opt != null) {
+          if (key.match(VAR_NAME_RE)) {
+            if (key !== '$attr') {
+              this.set('variable', key, opt);
+            }
+          } else {
+            this.set(key, opt);
           }
-        } else {
-          this.set(key, opt);
         }
       }
     }
@@ -464,6 +466,10 @@ var TransformationBase = class TransformationBase {
 
   toString() {
     return this.serialize();
+  }
+
+  clone() {
+    return new this.constructor(this.toOptions(true));
   }
 
 };
